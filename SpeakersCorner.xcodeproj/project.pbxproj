@@ -10,6 +10,7 @@
 		A99B38671B5AFB95007ED83B /* SCNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A99B38661B5AFB95007ED83B /* SCNote.swift */; };
 		A99B38691B5AFCB3007ED83B /* SCNoteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A99B38681B5AFCB3007ED83B /* SCNoteTests.swift */; };
 		A99B386B1B5C51E1007ED83B /* SCNotesListTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A99B386A1B5C51E1007ED83B /* SCNotesListTableViewController.swift */; };
+		A99B386E1B5C542B007ED83B /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A99B386D1B5C542B007ED83B /* CloudKit.framework */; };
 		A9D82A6E1B5AAEFE00577342 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9D82A6D1B5AAEFE00577342 /* AppDelegate.swift */; };
 		A9D82A731B5AAEFE00577342 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A9D82A711B5AAEFE00577342 /* Main.storyboard */; };
 		A9D82A751B5AAEFE00577342 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A9D82A741B5AAEFE00577342 /* Assets.xcassets */; };
@@ -39,6 +40,8 @@
 		A99B38661B5AFB95007ED83B /* SCNote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCNote.swift; sourceTree = "<group>"; };
 		A99B38681B5AFCB3007ED83B /* SCNoteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCNoteTests.swift; sourceTree = "<group>"; };
 		A99B386A1B5C51E1007ED83B /* SCNotesListTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCNotesListTableViewController.swift; sourceTree = "<group>"; };
+		A99B386C1B5C5427007ED83B /* SpeakersCorner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = SpeakersCorner.entitlements; sourceTree = "<group>"; };
+		A99B386D1B5C542B007ED83B /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		A9D82A6A1B5AAEFE00577342 /* SpeakersCorner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpeakersCorner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9D82A6D1B5AAEFE00577342 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A9D82A721B5AAEFE00577342 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -58,6 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A99B386E1B5C542B007ED83B /* CloudKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,6 +93,7 @@
 		A9D82A611B5AAEFE00577342 = {
 			isa = PBXGroup;
 			children = (
+				A99B386D1B5C542B007ED83B /* CloudKit.framework */,
 				A99B38651B5AF956007ED83B /* Models */,
 				A9D82A6C1B5AAEFE00577342 /* SpeakersCorner */,
 				A9D82A811B5AAEFE00577342 /* SpeakersCornerTests */,
@@ -110,6 +115,7 @@
 		A9D82A6C1B5AAEFE00577342 /* SpeakersCorner */ = {
 			isa = PBXGroup;
 			children = (
+				A99B386C1B5C5427007ED83B /* SpeakersCorner.entitlements */,
 				A9D82A6D1B5AAEFE00577342 /* AppDelegate.swift */,
 				A99B386A1B5C51E1007ED83B /* SCNotesListTableViewController.swift */,
 				A9D82A711B5AAEFE00577342 /* Main.storyboard */,
@@ -206,6 +212,12 @@
 				TargetAttributes = {
 					A9D82A691B5AAEFE00577342 = {
 						CreatedOnToolsVersion = 7.0;
+						DevelopmentTeam = 7X7TY4V6Z4;
+						SystemCapabilities = {
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
 					};
 					A9D82A7D1B5AAEFE00577342 = {
 						CreatedOnToolsVersion = 7.0;
@@ -412,10 +424,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SpeakersCorner/SpeakersCorner.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = SpeakersCorner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = uk.co.billglover.SpeakersCorner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -423,10 +439,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SpeakersCorner/SpeakersCorner.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = SpeakersCorner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = uk.co.billglover.SpeakersCorner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};
