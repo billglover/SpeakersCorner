@@ -7,12 +7,17 @@
 //
 
 import UIKit
+import CloudKit
 
 class SCNotesListTableViewController: UITableViewController {
     
     struct Constants {
         static let SCNoteCellReuseIdentifier = "SCNoteCellReuseIdentifier"
+        static let recordType = "SCNote"
     }
+    
+    let db = CKContainer.defaultContainer().publicCloudDatabase
+    var items = [SCNote]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,6 +27,8 @@ class SCNotesListTableViewController: UITableViewController {
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        
+        self.loadNotes()
     }
 
     override func didReceiveMemoryWarning() {
@@ -38,14 +45,19 @@ class SCNotesListTableViewController: UITableViewController {
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return 5
+        return self.items.count
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier(Constants.SCNoteCellReuseIdentifier, forIndexPath: indexPath)
 
         // Configure the cell...
-
+        let item = self.items[indexPath.row]
+        let location = item.location
+        
+        cell.textLabel?.text = item.title
+        cell.detailTextLabel?.text = "\(location.coordinate.latitude), \(location.coordinate.longitude)"
+        
         return cell
     }
 
@@ -94,6 +106,48 @@ class SCNotesListTableViewController: UITableViewController {
     }
     */
     
+    // MARK: - CloudKit
     
+    func loadNotes() {
+        let radiusInMeters = 425.0
+        let location = CLLocation(latitude: 51.551601, longitude: -0.1981028)
+        //let location = CLLocation(latitude: 51.54546434, longitude: -0.19142389)
+        let locationPredicate = NSPredicate(format: "distanceToLocation:fromLocation:(location,%@) < %f", location, radiusInMeters)
+        let query = CKQuery(recordType: Constants.recordType, predicate: locationPredicate)
+        query.sortDescriptors = [(CKLocationSortDescriptor(key: "location", relativeLocation: location))]
+        
+        self.db.performQuery(query, inZoneWithID: nil) { (results, error) -> Void in
+            if error != nil {
+                print(error?.localizedDescription)
+            } else {
+                dispatch_async(dispatch_get_main_queue()) { () -> Void in
+                    if let fetchedItems = results as [CKRecord]! {
+                        
+                        self.items.removeAll()
+                        
+                        for fetchedItem in fetchedItems {
+                            if let note = SCNote(fromRecord: fetchedItem) { self.items.append(note) }
+                        }
 
+                        self.tableView.reloadData()
+                        print(self.items.count)
+                    }
+                }
+            }
+            
+        }
+        
+    }
+    
+    func addNote() {
+        let record = CKRecord(recordType: Constants.recordType)
+        record.setObject("Sample", forKey: "title")
+        record.setObject(CLLocation(latitude: 0.01, longitude: 0.02), forKey: "location")
+        
+        self.db.saveRecord(record) { (record, error) -> Void in
+            if error != nil {
+                print(error!.localizedDescription)
+            }
+        }
+    }
 }

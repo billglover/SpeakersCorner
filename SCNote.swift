@@ -6,33 +6,43 @@
 //  Copyright © 2015 Bill Glover. All rights reserved.
 //
 
+import Foundation
+import CoreLocation
+
 struct SCNote {
     var title: String
-    var latitude: Double
-    var longitude: Double
+    var location: CLLocation
     var urlAudio: String? = nil
+    var creationDate: NSDate? = nil
+    var modificationDate: NSDate? = nil
+    var recordName: String? = nil
     
-    init(title: String, latitude: Double, longitude: Double, urlAudio: String?) {
+    
+    init(title: String, location: CLLocation, urlAudio: String?) {
         self.title = title
-        self.latitude = latitude
-        self.longitude = longitude
+        self.location = location
         self.urlAudio = urlAudio
+        self.creationDate = NSDate()
+        self.modificationDate = NSDate()
     }
     
-    init(title: String, latitude: Double, longitude: Double) {
+    init(title: String, location: CLLocation) {
         self.title = title
-        self.latitude = latitude
-        self.longitude = longitude
+        self.location = location
         self.urlAudio = nil
+        self.creationDate = NSDate()
+        self.modificationDate = NSDate()
     }
+
 }
 
 extension SCNote: Equatable {}
 
 func ==(lhs: SCNote, rhs: SCNote) -> Bool {
     let areEqual = lhs.title == rhs.title &&
-                   lhs.latitude == rhs.latitude &&
-                   lhs.longitude == rhs.longitude &&
+                   lhs.location.coordinate.latitude == rhs.location.coordinate.latitude &&
+                   lhs.location.coordinate.longitude == rhs.location.coordinate.longitude &&
+                   lhs.location.altitude == rhs.location.altitude &&
                    lhs.urlAudio == rhs.urlAudio
     
     return areEqual
