@@ -20,39 +20,45 @@ class SCNotesListTableViewController: UITableViewController {
     let db = CKContainer.defaultContainer().publicCloudDatabase
     var items = [SCNote]()
 
+    
+    
+    // MARK: - View Controller Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        
+        // Load a list of notes near the current location
         self.loadNotes()
+        
+        // Check if the user has an authenticated iCloud Account
+        CKContainer.defaultContainer().accountStatusWithCompletionHandler(handleAccountStatus)
+        
+        // add pull to refresh
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: "loadNotes", forControlEvents: UIControlEvents.ValueChanged)
+        refreshControl.tintColor = UIColor.whiteColor()
+        self.refreshControl = refreshControl
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
 
+    
+    
     // MARK: - Table view data source
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         return self.items.count
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier(Constants.SCNoteCellReuseIdentifier, forIndexPath: indexPath)
 
-        // Configure the cell...
         let item = self.items[indexPath.row]
         let location = item.location
         
@@ -62,69 +68,42 @@ class SCNotesListTableViewController: UITableViewController {
         return cell
     }
     
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
 
-    /*
-    // Override to support editing the table view.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            // Delete the row from the data source
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-        } else if editingStyle == .Insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return NO if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
+    
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-        
         if (segue.identifier == Constants.addNoteSegueIdentifier) {
-            
+            // TODO: It might make sense to handle location differently here:
+            //  - pass in current location
+            //  - stop updating the users location
+            segue
         }
     }
     
     @IBAction func unwindToList(segue: UIStoryboardSegue) {
+
         if let sourceViewController = segue.sourceViewController as? SCNoteAddViewController {
-            print("Coming from Add Note")
-            
+
+            // if we don't have a title and a location, we don't add the note
+            // TODO: we should check this in SCNoteAddViewController to prevent the user
+            //       arriving in this situation as this is a silent failure
             guard let title = sourceViewController.thisLocation?.title else { return }
             guard let location = sourceViewController.thisLocation?.location else { return }
             
+            // this code could be moved into SCNoteCloudKit
             let record = CKRecord(recordType: Constants.recordType)
             record.setObject(title, forKey: "title")
             record.setObject(location, forKey: "location")
             
+            // save the record to the cloud
             self.db.saveRecord(record) { (record, error) -> Void in
                 if error != nil {
+                    
+                    // for some errors we will want to notify the user
+                    // for others we'll want to cache the record and try again
                     print(error!.localizedDescription)
                 }
-                self.loadNotes()
             }
         }
     }
@@ -134,7 +113,6 @@ class SCNotesListTableViewController: UITableViewController {
     func loadNotes() {
         let radiusInMeters = 1000000000.000
         let location = CLLocation(latitude: 51.551601, longitude: -0.1981028)
-        //let location = CLLocation(latitude: 51.54546434, longitude: -0.19142389)
         let locationPredicate = NSPredicate(format: "distanceToLocation:fromLocation:(location,%@) < %f", location, radiusInMeters)
         let query = CKQuery(recordType: Constants.recordType, predicate: locationPredicate)
         query.sortDescriptors = [(CKLocationSortDescriptor(key: "location", relativeLocation: location))]
@@ -154,12 +132,91 @@ class SCNotesListTableViewController: UITableViewController {
                         }
 
                         self.tableView.reloadData()
-                        print(self.items.count)
                     }
                 }
             }
             
+            self.refreshControl?.endRefreshing()
         }
-        
     }
+    
+    func handleAccountStatus(status: CKAccountStatus, error: NSError?) {
+
+        if (error == nil) {
+
+            // if the account status can be determined, enable adding notes accordingly
+            print(status)
+            
+            switch status {
+                
+            // user is logged in to iCloud
+            case .Available:
+                dispatch_async(dispatch_get_main_queue(), {
+                    self.navigationItem.rightBarButtonItem?.enabled = true
+                })
+
+            // user is unable to use iCloud
+            case .Restricted:
+                dispatch_async(dispatch_get_main_queue(), {
+                    let alertController = UIAlertController(title: "iCloud Restricted",
+                        message: "It looks like access to iCloud has been restricted on this device. Without an iCloud account you'll be unable to post new notes, but you will be able to view all public notes.",
+                        preferredStyle: .Alert)
+                    
+                    let okAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
+                    alertController.addAction(okAction)
+                    
+                    self.presentViewController(alertController, animated: true, completion: nil)
+
+                    self.navigationItem.rightBarButtonItem?.enabled = false
+                })
+            
+            // user hasn't yet signed in to iCloud
+            case .NoAccount:
+                dispatch_async(dispatch_get_main_queue(), {
+
+                    let alertController = UIAlertController(title: "iCloud Desired",
+                        message: "It looks like you haven't signed in to iCloud on this device. You don't need an iCloud account to view all our public notes, but if you'd like to leave a note of your own, you'll need to head on over to Settings and sign in to iCloud.",
+                        preferredStyle: .Alert)
+                    
+                    let settingsAction = UIAlertAction(title: "Settings", style: .Default) { (alertAction) in
+                        
+                        if let appSettings = NSURL(string: UIApplicationOpenSettingsURLString) {
+                            UIApplication.sharedApplication().openURL(appSettings)
+                        }
+                    }
+                    alertController.addAction(settingsAction)
+                    
+                    let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: nil)
+                    alertController.addAction(cancelAction)
+                    
+                    self.presentViewController(alertController, animated: true, completion: nil)
+                    
+                    self.navigationItem.rightBarButtonItem?.enabled = false
+                })
+                
+            // we are unable to determine whether or not the user has an iCloud account
+            case .CouldNotDetermine:
+                dispatch_async(dispatch_get_main_queue(), {
+                    let alertController = UIAlertController(title: "iCloud Desired",
+                        message: "For some reason we were unable to determine hte status of your iCloud account on this device. You don't need an iCloud account to view all our public notes, but if you'd like to leave a note of your own, we'll need to validate your iCloud account. We'll try this next time to see if we have better luck.",
+                        preferredStyle: .Alert)
+                    
+                    let okAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
+                    alertController.addAction(okAction)
+                    
+                    self.presentViewController(alertController, animated: true, completion: nil)
+                    
+                    self.navigationItem.rightBarButtonItem?.enabled = false
+                })
+            }
+            
+        } else {
+            print(error?.localizedDescription)
+            dispatch_async(dispatch_get_main_queue(), {
+                self.navigationItem.rightBarButtonItem?.enabled = false
+            })
+        }
+
+    }
+    
 }
