@@ -8,8 +8,10 @@
 
 import UIKit
 import CloudKit
+import CoreLocation
+import MapKit
 
-class SCNotesListTableViewController: UITableViewController {
+class SCNotesListTableViewController: UITableViewController, CLLocationManagerDelegate {
     
     struct Constants {
         static let SCNoteCellReuseIdentifier = "SCNoteCellReuseIdentifier"
@@ -20,12 +22,19 @@ class SCNotesListTableViewController: UITableViewController {
     let db = CKContainer.defaultContainer().publicCloudDatabase
     var items = [SCNote]()
 
+    let locationManager = CLLocationManager()
+    var currentLocation: CLLocation?
+    
     
     
     // MARK: - View Controller Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Start fetching location updates
+        locationManager.delegate = self
+        startTrackingLocation()
 
         // Load a list of notes near the current location
         self.loadNotes()
@@ -39,6 +48,11 @@ class SCNotesListTableViewController: UITableViewController {
         refreshControl.addTarget(self, action: "loadNotes", forControlEvents: UIControlEvents.ValueChanged)
         refreshControl.tintColor = UIColor.whiteColor()
         self.refreshControl = refreshControl
+    }
+    
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopTrackingLocation()
     }
 
     
@@ -57,10 +71,16 @@ class SCNotesListTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCellWithIdentifier(Constants.SCNoteCellReuseIdentifier, forIndexPath: indexPath)
 
         let item = self.items[indexPath.row]
-        let location = item.location
+        if let location = currentLocation {
+            let distanceFromCurrentLocation = location.distanceFromLocation(item.location)
+            let numberFormatter = NSNumberFormatter()
+            numberFormatter.maximumFractionDigits = 1
+            let formatter = NSLengthFormatter()
+            formatter.numberFormatter = numberFormatter
+            cell.detailTextLabel?.text = "\(formatter.stringFromMeters(distanceFromCurrentLocation)) (\(item.location.coordinate.latitude), \(item.location.coordinate.longitude))"
+        }
         
         cell.textLabel?.text = item.title
-        cell.detailTextLabel?.text = "\(location.coordinate.latitude), \(location.coordinate.longitude)"
         
         return cell
     }
@@ -219,6 +239,34 @@ class SCNotesListTableViewController: UITableViewController {
     
     
     
+    // MARK: - Location
+    func startTrackingLocation() {
+
+        // TODO: If location has been denied, we need to send the user over to settings to grant access
+        if (CLLocationManager.authorizationStatus() != CLAuthorizationStatus.AuthorizedWhenInUse) {
+            locationManager.requestWhenInUseAuthorization()
+        } else {
+            locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+            locationManager.distanceFilter = CLLocationDistance(10)
+            locationManager.startUpdatingLocation()
+        }
+
+    }
     
+    func stopTrackingLocation() {
+        locationManager.stopUpdatingLocation()
+    }
     
+    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let thisLocation = locations.last {
+            print("Time: \(thisLocation.timestamp) Lat: \(thisLocation.coordinate.latitude) Lon: \(thisLocation.coordinate.longitude)")
+            currentLocation = thisLocation
+            self.tableView.reloadData()
+        }
+    }
+    
+    func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+        print(error)
+    }
+
 }
