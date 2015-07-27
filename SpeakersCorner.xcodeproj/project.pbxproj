@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A9412D2F1B63F0930012BC4A /* SCNoteAddViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9412D2E1B63F0930012BC4A /* SCNoteAddViewController.swift */; };
 		A9533D491B5DAAD100E1910D /* SCNoteCloudKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9533D481B5DAAD100E1910D /* SCNoteCloudKitTests.swift */; };
 		A99B38671B5AFB95007ED83B /* SCNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A99B38661B5AFB95007ED83B /* SCNote.swift */; };
 		A99B38691B5AFCB3007ED83B /* SCNoteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A99B38681B5AFCB3007ED83B /* SCNoteTests.swift */; };
@@ -39,6 +40,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A9412D2E1B63F0930012BC4A /* SCNoteAddViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCNoteAddViewController.swift; sourceTree = "<group>"; };
 		A9533D481B5DAAD100E1910D /* SCNoteCloudKitTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCNoteCloudKitTests.swift; sourceTree = "<group>"; };
 		A99B38661B5AFB95007ED83B /* SCNote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCNote.swift; sourceTree = "<group>"; };
 		A99B38681B5AFCB3007ED83B /* SCNoteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCNoteTests.swift; sourceTree = "<group>"; };
@@ -124,6 +126,7 @@
 				A9D82A6D1B5AAEFE00577342 /* AppDelegate.swift */,
 				A99B386A1B5C51E1007ED83B /* SCNotesListTableViewController.swift */,
 				A9D82A711B5AAEFE00577342 /* Main.storyboard */,
+				A9412D2E1B63F0930012BC4A /* SCNoteAddViewController.swift */,
 				A9D82A741B5AAEFE00577342 /* Assets.xcassets */,
 				A9D82A761B5AAEFE00577342 /* LaunchScreen.storyboard */,
 				A9D82A791B5AAEFE00577342 /* Info.plist */,
@@ -287,6 +290,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A9412D2F1B63F0930012BC4A /* SCNoteAddViewController.swift in Sources */,
 				A99B386B1B5C51E1007ED83B /* SCNotesListTableViewController.swift in Sources */,
 				A9D82A6E1B5AAEFE00577342 /* AppDelegate.swift in Sources */,
 				A99B38701B5D9EA4007ED83B /* SCNoteCloudKit.swift in Sources */,
@@ -485,6 +489,8 @@
 		A9D82A991B5AAEFE00577342 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphoneos9.0]" = "";
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator9.0]" = "";
 				INFOPLIST_FILE = SpeakersCornerUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = uk.co.billglover.SpeakersCornerUITests;
