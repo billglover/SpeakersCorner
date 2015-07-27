@@ -32,10 +32,13 @@ class SCNotesListTableViewController: UITableViewController, CLLocationManagerDe
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // TODO: Check why this isn't picked up from InterfaceBuilder
+        self.tableView.backgroundColor = UIColor(red: 18.0/255, green: 164.0/255, blue: 253.0/255, alpha: 1.0)
+        
         // Start fetching location updates
         locationManager.delegate = self
         startTrackingLocation()
-
+        
         // Load a list of notes near the current location
         self.loadNotes()
         
@@ -43,11 +46,6 @@ class SCNotesListTableViewController: UITableViewController, CLLocationManagerDe
         CKContainer.defaultContainer().accountStatusWithCompletionHandler(handleAccountStatusCheck)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("handleCKAccountChangedNotification"), name: CKAccountChangedNotification, object: nil)
         
-        // add pull to refresh
-        let refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: "loadNotes", forControlEvents: UIControlEvents.ValueChanged)
-        refreshControl.tintColor = UIColor.whiteColor()
-        self.refreshControl = refreshControl
     }
     
     override func viewWillDisappear(animated: Bool) {
@@ -66,6 +64,11 @@ class SCNotesListTableViewController: UITableViewController, CLLocationManagerDe
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.items.count
     }
+    
+    override func tableView(tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let footerView = UIView(frame: CGRectZero)
+        return footerView
+    }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier(Constants.SCNoteCellReuseIdentifier, forIndexPath: indexPath)
@@ -77,12 +80,22 @@ class SCNotesListTableViewController: UITableViewController, CLLocationManagerDe
             numberFormatter.maximumFractionDigits = 1
             let formatter = NSLengthFormatter()
             formatter.numberFormatter = numberFormatter
-            cell.detailTextLabel?.text = "\(formatter.stringFromMeters(distanceFromCurrentLocation)) (\(item.location.coordinate.latitude), \(item.location.coordinate.longitude))"
+            cell.detailTextLabel?.text = "\(formatter.stringFromMeters(distanceFromCurrentLocation))"
         }
         
         cell.textLabel?.text = item.title
         
         return cell
+    }
+    
+    @IBAction func refreshTableView(sender: AnyObject) {
+        loadNotes()
+    }
+    
+    func sortByLocation() {
+        if let location = currentLocation {
+            items.sortInPlace({return $0.location.distanceFromLocation(location) < $1.location.distanceFromLocation(location)})
+        }
     }
     
 
@@ -147,6 +160,7 @@ class SCNotesListTableViewController: UITableViewController, CLLocationManagerDe
                             if let note = SCNote(fromRecord: fetchedItem) { self.items.append(note) }
                         }
 
+                        self.sortByLocation()
                         self.tableView.reloadData()
                     }
                 }
@@ -261,6 +275,7 @@ class SCNotesListTableViewController: UITableViewController, CLLocationManagerDe
         if let thisLocation = locations.last {
             print("Time: \(thisLocation.timestamp) Lat: \(thisLocation.coordinate.latitude) Lon: \(thisLocation.coordinate.longitude)")
             currentLocation = thisLocation
+            self.sortByLocation()
             self.tableView.reloadData()
         }
     }
