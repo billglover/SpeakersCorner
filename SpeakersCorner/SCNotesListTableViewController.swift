@@ -8,8 +8,10 @@
 
 import UIKit
 import CloudKit
+import CoreLocation
+import MapKit
 
-class SCNotesListTableViewController: UITableViewController {
+class SCNotesListTableViewController: UITableViewController, CLLocationManagerDelegate {
     
     struct Constants {
         static let SCNoteCellReuseIdentifier = "SCNoteCellReuseIdentifier"
@@ -20,13 +22,23 @@ class SCNotesListTableViewController: UITableViewController {
     let db = CKContainer.defaultContainer().publicCloudDatabase
     var items = [SCNote]()
 
+    let locationManager = CLLocationManager()
+    var currentLocation: CLLocation?
+    
     
     
     // MARK: - View Controller Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        // TODO: Check why this isn't picked up from InterfaceBuilder
+        self.tableView.backgroundColor = UIColor(red: 18.0/255, green: 164.0/255, blue: 253.0/255, alpha: 1.0)
+        
+        // Start fetching location updates
+        locationManager.delegate = self
+        startTrackingLocation()
+        
         // Load a list of notes near the current location
         self.loadNotes()
         
@@ -34,11 +46,11 @@ class SCNotesListTableViewController: UITableViewController {
         CKContainer.defaultContainer().accountStatusWithCompletionHandler(handleAccountStatusCheck)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("handleCKAccountChangedNotification"), name: CKAccountChangedNotification, object: nil)
         
-        // add pull to refresh
-        let refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: "loadNotes", forControlEvents: UIControlEvents.ValueChanged)
-        refreshControl.tintColor = UIColor.whiteColor()
-        self.refreshControl = refreshControl
+    }
+    
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopTrackingLocation()
     }
 
     
@@ -52,17 +64,38 @@ class SCNotesListTableViewController: UITableViewController {
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.items.count
     }
+    
+    override func tableView(tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let footerView = UIView(frame: CGRectZero)
+        return footerView
+    }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier(Constants.SCNoteCellReuseIdentifier, forIndexPath: indexPath)
 
         let item = self.items[indexPath.row]
-        let location = item.location
+        if let location = currentLocation {
+            let distanceFromCurrentLocation = location.distanceFromLocation(item.location)
+            let numberFormatter = NSNumberFormatter()
+            numberFormatter.maximumFractionDigits = 1
+            let formatter = NSLengthFormatter()
+            formatter.numberFormatter = numberFormatter
+            cell.detailTextLabel?.text = "\(formatter.stringFromMeters(distanceFromCurrentLocation))"
+        }
         
         cell.textLabel?.text = item.title
-        cell.detailTextLabel?.text = "\(location.coordinate.latitude), \(location.coordinate.longitude)"
         
         return cell
+    }
+    
+    @IBAction func refreshTableView(sender: AnyObject) {
+        loadNotes()
+    }
+    
+    func sortByLocation() {
+        if let location = currentLocation {
+            items.sortInPlace({return $0.location.distanceFromLocation(location) < $1.location.distanceFromLocation(location)})
+        }
     }
     
 
@@ -127,6 +160,7 @@ class SCNotesListTableViewController: UITableViewController {
                             if let note = SCNote(fromRecord: fetchedItem) { self.items.append(note) }
                         }
 
+                        self.sortByLocation()
                         self.tableView.reloadData()
                     }
                 }
@@ -219,6 +253,35 @@ class SCNotesListTableViewController: UITableViewController {
     
     
     
+    // MARK: - Location
+    func startTrackingLocation() {
+
+        // TODO: If location has been denied, we need to send the user over to settings to grant access
+        if (CLLocationManager.authorizationStatus() != CLAuthorizationStatus.AuthorizedWhenInUse) {
+            locationManager.requestWhenInUseAuthorization()
+        } else {
+            locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+            locationManager.distanceFilter = CLLocationDistance(10)
+            locationManager.startUpdatingLocation()
+        }
+
+    }
     
+    func stopTrackingLocation() {
+        locationManager.stopUpdatingLocation()
+    }
     
+    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let thisLocation = locations.last {
+            print("Time: \(thisLocation.timestamp) Lat: \(thisLocation.coordinate.latitude) Lon: \(thisLocation.coordinate.longitude)")
+            currentLocation = thisLocation
+            self.sortByLocation()
+            self.tableView.reloadData()
+        }
+    }
+    
+    func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+        print(error)
+    }
+
 }

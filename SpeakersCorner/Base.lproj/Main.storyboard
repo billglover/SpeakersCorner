@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="8121.20" systemVersion="15A215h" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="txu-Xn-mzo">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="8164.2" systemVersion="15A225f" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="txu-Xn-mzo">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8101.16"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8135.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
         <!--Notes-->
         <scene sceneID="B5S-wZ-oeT">
             <objects>
-                <tableViewController id="67W-bT-fv9" customClass="SCNotesListTableViewController" customModule="SpeakersCorner" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Notes" id="67W-bT-fv9" customClass="SCNotesListTableViewController" customModule="SpeakersCorner" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" allowsSelection="NO" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="BXP-HP-Liz">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -52,13 +52,21 @@
                             <outlet property="delegate" destination="67W-bT-fv9" id="vAT-6D-9G0"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Notes" id="dhe-pc-I2x">
+                    <navigationItem key="navigationItem" id="dhe-pc-I2x">
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="mmF-9m-kQw">
                             <connections>
                                 <segue destination="jcZ-ud-vOS" kind="show" identifier="addNoteSegueIdentifier" id="uAr-44-mTO"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <refreshControl key="refreshControl" opaque="NO" multipleTouchEnabled="YES" contentMode="center" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" id="2Dr-Gp-Dpd">
+                        <autoresizingMask key="autoresizingMask"/>
+                        <animations/>
+                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <connections>
+                            <action selector="refreshTableView:" destination="67W-bT-fv9" eventType="valueChanged" id="E4s-oQ-6JN"/>
+                        </connections>
+                    </refreshControl>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ftQ-qg-990" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
