@@ -81,6 +81,12 @@ class SCNotesListTableViewController: UITableViewController, CLLocationManagerDe
             let formatter = NSLengthFormatter()
             formatter.numberFormatter = numberFormatter
             cell.detailTextLabel?.text = "\(formatter.stringFromMeters(distanceFromCurrentLocation))"
+        } else {
+            cell.detailTextLabel?.text = ""
+        }
+        
+        if item.urlAudio != nil {
+            cell.accessoryType = UITableViewCellAccessoryType.DetailButton
         }
         
         cell.textLabel?.text = item.title
@@ -124,6 +130,11 @@ class SCNotesListTableViewController: UITableViewController, CLLocationManagerDe
             let record = CKRecord(recordType: Constants.recordType)
             record.setObject(title, forKey: "title")
             record.setObject(location, forKey: "location")
+            
+            if let url = sourceViewController.thisLocation?.urlAudio {
+                let asset = CKAsset(fileURL: url)
+                record["urlAudio"] = asset
+            }
             
             // save the record to the cloud
             self.db.saveRecord(record) { (record, error) -> Void in

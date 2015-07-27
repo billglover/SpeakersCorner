@@ -16,11 +16,11 @@ class SCNoteTests: XCTestCase {
         
         let note1 = SCNote(title: "Note A", location: CLLocation(latitude: 0.001, longitude: 1.001))
         let note1a = SCNote(title: "Note A", location: CLLocation(latitude: 0.001, longitude: 1.001))
-        let note2 = SCNote(title: "Note B", location: CLLocation(latitude: 0.002, longitude: 2.002), urlAudio: "http://billglover.me/")
+        let note2 = SCNote(title: "Note B", location: CLLocation(latitude: 0.002, longitude: 2.002), urlAudio: NSURL(string: "http://billglover.me/"))
         
         let note1Optional: SCNote? = SCNote(title: "Note A", location: CLLocation(latitude: 0.001, longitude: 1.001))
         let note1aOptional: SCNote? = SCNote(title: "Note A", location: CLLocation(latitude: 0.001, longitude: 1.001))
-        let note2Optional: SCNote? = SCNote(title: "Note B", location: CLLocation(latitude: 0.002, longitude: 2.002), urlAudio: "http://billglover.me/")
+        let note2Optional: SCNote? = SCNote(title: "Note B", location: CLLocation(latitude: 0.002, longitude: 2.002), urlAudio: NSURL(string: "http://billglover.me/"))
 
         XCTAssertTrue(note1 != note2)
         XCTAssertTrue(note1 == note1a)

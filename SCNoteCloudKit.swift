@@ -28,6 +28,10 @@ extension SCNote {
         guard let location = fromRecord["location"] as? CLLocation else { return nil }
         self.location = location
         
+        if let asset = fromRecord["urlAudio"] as? CKAsset {
+            self.urlAudio = asset.fileURL
+        }
+        
         self.creationDate = fromRecord.creationDate
         self.modificationDate = fromRecord.modificationDate
         self.recordName = fromRecord.recordID.recordName

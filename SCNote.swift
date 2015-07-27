@@ -12,13 +12,13 @@ import CoreLocation
 struct SCNote {
     var title: String
     var location: CLLocation
-    var urlAudio: String? = nil
+    var urlAudio: NSURL? = nil
     var creationDate: NSDate? = nil
     var modificationDate: NSDate? = nil
     var recordName: String? = nil
     
     
-    init(title: String, location: CLLocation, urlAudio: String?) {
+    init(title: String, location: CLLocation, urlAudio: NSURL?) {
         self.title = title
         self.location = location
         self.urlAudio = urlAudio
