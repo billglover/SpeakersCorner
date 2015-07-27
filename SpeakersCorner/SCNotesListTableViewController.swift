@@ -31,17 +31,14 @@ class SCNotesListTableViewController: UITableViewController {
         self.loadNotes()
         
         // Check if the user has an authenticated iCloud Account
-        CKContainer.defaultContainer().accountStatusWithCompletionHandler(handleAccountStatus)
+        CKContainer.defaultContainer().accountStatusWithCompletionHandler(handleAccountStatusCheck)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("handleCKAccountChangedNotification"), name: CKAccountChangedNotification, object: nil)
         
         // add pull to refresh
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: "loadNotes", forControlEvents: UIControlEvents.ValueChanged)
         refreshControl.tintColor = UIColor.whiteColor()
         self.refreshControl = refreshControl
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
     }
 
     
@@ -77,7 +74,6 @@ class SCNotesListTableViewController: UITableViewController {
             // TODO: It might make sense to handle location differently here:
             //  - pass in current location
             //  - stop updating the users location
-            segue
         }
     }
     
@@ -140,13 +136,10 @@ class SCNotesListTableViewController: UITableViewController {
         }
     }
     
-    func handleAccountStatus(status: CKAccountStatus, error: NSError?) {
+    func handleAccountStatusCheck(status: CKAccountStatus, error: NSError?) {
 
         if (error == nil) {
-
-            // if the account status can be determined, enable adding notes accordingly
-            print(status)
-            
+          
             switch status {
                 
             // user is logged in to iCloud
@@ -218,5 +211,14 @@ class SCNotesListTableViewController: UITableViewController {
         }
 
     }
+    
+    // if the iCloud state changes, re-check the users authentication
+    func handleCKAccountChangedNotification() {
+        CKContainer.defaultContainer().accountStatusWithCompletionHandler(handleAccountStatusCheck)
+    }
+    
+    
+    
+    
     
 }
