@@ -14,6 +14,7 @@ class SCNotesListTableViewController: UITableViewController {
     struct Constants {
         static let SCNoteCellReuseIdentifier = "SCNoteCellReuseIdentifier"
         static let recordType = "SCNote"
+        static let addNoteSegueIdentifier = "addNoteSegueIdentifier"
     }
     
     let db = CKContainer.defaultContainer().publicCloudDatabase
@@ -60,7 +61,7 @@ class SCNotesListTableViewController: UITableViewController {
         
         return cell
     }
-
+    
     /*
     // Override to support conditional editing of the table view.
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
@@ -96,20 +97,42 @@ class SCNotesListTableViewController: UITableViewController {
     }
     */
 
-    /*
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        
+        if (segue.identifier == Constants.addNoteSegueIdentifier) {
+            
+        }
     }
-    */
+    
+    @IBAction func unwindToList(segue: UIStoryboardSegue) {
+        if let sourceViewController = segue.sourceViewController as? SCNoteAddViewController {
+            print("Coming from Add Note")
+            
+            guard let title = sourceViewController.thisLocation?.title else { return }
+            guard let location = sourceViewController.thisLocation?.location else { return }
+            
+            let record = CKRecord(recordType: Constants.recordType)
+            record.setObject(title, forKey: "title")
+            record.setObject(location, forKey: "location")
+            
+            self.db.saveRecord(record) { (record, error) -> Void in
+                if error != nil {
+                    print(error!.localizedDescription)
+                }
+                self.loadNotes()
+            }
+        }
+    }
     
     // MARK: - CloudKit
     
     func loadNotes() {
-        let radiusInMeters = 425.0
+        let radiusInMeters = 1000000000.000
         let location = CLLocation(latitude: 51.551601, longitude: -0.1981028)
         //let location = CLLocation(latitude: 51.54546434, longitude: -0.19142389)
         let locationPredicate = NSPredicate(format: "distanceToLocation:fromLocation:(location,%@) < %f", location, radiusInMeters)
@@ -122,6 +145,7 @@ class SCNotesListTableViewController: UITableViewController {
             } else {
                 dispatch_async(dispatch_get_main_queue()) { () -> Void in
                     if let fetchedItems = results as [CKRecord]! {
+                        print(fetchedItems.count)
                         
                         self.items.removeAll()
                         
@@ -137,17 +161,5 @@ class SCNotesListTableViewController: UITableViewController {
             
         }
         
-    }
-    
-    func addNote() {
-        let record = CKRecord(recordType: Constants.recordType)
-        record.setObject("Sample", forKey: "title")
-        record.setObject(CLLocation(latitude: 0.01, longitude: 0.02), forKey: "location")
-        
-        self.db.saveRecord(record) { (record, error) -> Void in
-            if error != nil {
-                print(error!.localizedDescription)
-            }
-        }
     }
 }
