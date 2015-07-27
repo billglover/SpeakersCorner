@@ -28,11 +28,6 @@ class SCNoteAddViewController: UIViewController, CLLocationManagerDelegate {
         
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
     override func viewDidDisappear(animated: Bool) {
         locationManager.stopUpdatingLocation()
         super.viewDidDisappear(animated)
@@ -42,6 +37,8 @@ class SCNoteAddViewController: UIViewController, CLLocationManagerDelegate {
         titleTextField.resignFirstResponder()
     }
 
+    
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -56,6 +53,10 @@ class SCNoteAddViewController: UIViewController, CLLocationManagerDelegate {
         thisLocation = SCNote(title: titleTextField.text!, location: location)
         }
     }
+    
+    
+    
+    // MARK: - Location
     
     func updateLocation() {
         latitudeLabel.text = ""
