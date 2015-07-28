@@ -87,6 +87,8 @@ class SCNotesListTableViewController: UITableViewController, CLLocationManagerDe
         
         if item.urlAudio != nil {
             cell.accessoryType = UITableViewCellAccessoryType.DetailButton
+        } else {
+            cell.accessoryType = UITableViewCellAccessoryType.None
         }
         
         cell.textLabel?.text = item.title
